@@ -1,0 +1,14 @@
+image:
+  repository: ghcr.io/java-taxi-microservices/api-gateway
+  tag: latest
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: ghcr-secret
+
+service:
+  port: 80
+
+ingress:
+  enabled: true
+  host: api.alex-antoniuk.dev
