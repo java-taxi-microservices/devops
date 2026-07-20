@@ -5,6 +5,21 @@ metadata:
   name: api-gateway
   namespace: argocd
 
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: api=ghcr.io/java-taxi-microservices/api-gateway
+
+    argocd-image-updater.argoproj.io/api.update-strategy: newest-build
+
+    argocd-image-updater.argoproj.io/api.pull-secret: pullsecret:argocd/ghcr-secret
+
+    argocd-image-updater.argoproj.io/api.helm.image-name: image.repository
+
+    argocd-image-updater.argoproj.io/api.helm.image-tag: image.tag
+
+    argocd-image-updater.argoproj.io/write-back-method: git
+
+    argocd-image-updater.argoproj.io/write-back-target: helmvalues:charts/api-gateway/values.yaml
+
 spec:
   project: default
 
