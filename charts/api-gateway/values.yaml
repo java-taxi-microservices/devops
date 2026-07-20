@@ -1,16 +1,12 @@
 replicaCount: 2
-
 image:
   repository: ghcr.io/java-taxi-microservices/api-gateway
-  tag: 3c84641
+  tag: latest
   pullPolicy: IfNotPresent
-
 imagePullSecrets:
-  - name: ghcr-secret
-
+- name: ghcr-secret
 service:
   port: 80
-
 ingress:
   enabled: true
   host: api.alex-antoniuk.dev
