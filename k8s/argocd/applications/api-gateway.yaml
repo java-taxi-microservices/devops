@@ -18,7 +18,7 @@ metadata:
 
     argocd-image-updater.argoproj.io/write-back-method: git
 
-    argocd-image-updater.argoproj.io/write-back-target: helmvalues:charts/api-gateway/values.yaml
+    argocd-image-updater.argoproj.io/write-back-target: helmvalues:values.yaml
 
 spec:
   project: default
