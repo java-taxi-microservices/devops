@@ -36,3 +36,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
+
+      - name: Delete old images
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          package: ${{ inputs.image_name }}
+          keep-n-tagged: 3
+          delete-untagged: true
