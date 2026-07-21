@@ -1,0 +1,16 @@
+services:
+  registration-service-psql-db:
+    image: postgres:18-alpine
+    container_name: registration-service-psql-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${REGISTRATION_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${REGISTRATION_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${REGISTRATION_POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - registration-service-psql-db-data:/var/lib/postgresql
+
+volumes:
+  registration-service-psql-db-data:
