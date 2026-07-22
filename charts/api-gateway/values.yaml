@@ -10,3 +10,5 @@ service:
 ingress:
   enabled: true
   host: api.alex-antoniuk.dev
+env:
+  SPRING_PROFILES_ACTIVE: dev
