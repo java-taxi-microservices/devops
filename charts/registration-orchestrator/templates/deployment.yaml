@@ -16,7 +16,23 @@ spec:
       labels:
         app: registration-orchestrator
 
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "registration-orchestrator"
+
+        vault.hashicorp.com/agent-inject-secret-application.properties: "secret/data/registration-orchestrator"
+
+        vault.hashicorp.com/agent-inject-template-application.properties: |
+          {{`{{- with secret "secret/data/registration-orchestrator" -}}
+          spring.datasource.url={{ .Data.data.POSTGRES_URL }}
+          spring.datasource.username={{ .Data.data.POSTGRES_USER }}
+          spring.datasource.password={{ .Data.data.POSTGRES_PASSWORD }}
+          spring.datasource.driver-class-name=org.postgresql.Driver
+          {{- end -}}`}}
+
     spec:
+      serviceAccountName: registration-orchestrator
+
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -26,31 +42,12 @@ spec:
         - name: registration-orchestrator
 
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-
           imagePullPolicy: {{ .Values.image.pullPolicy }}
 
           ports:
             - containerPort: 9090
-          
+
           env:
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: registration-orchestrator-secret
-                  key: POSTGRES_USER
-
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: registration-orchestrator-secret
-                  key: POSTGRES_PASSWORD
-
-            - name: POSTGRES_URL
-              valueFrom:
-                secretKeyRef:
-                  name: registration-orchestrator-secret
-                  key: POSTGRES_URL
-
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.spring.profiles.active }}
 
