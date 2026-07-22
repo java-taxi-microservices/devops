@@ -51,5 +51,8 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.spring.profiles.active }}
 
+            - name: SPRING_CONFIG_IMPORT
+              value: optional:file:/vault/secrets/application.properties
+
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
