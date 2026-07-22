@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: registration-orchestrator
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: registration-orchestrator
+
+  template:
+    metadata:
+      labels:
+        app: registration-orchestrator
+
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      containers:
+        - name: registration-orchestrator
+
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          ports:
+            - containerPort: 9090
+          
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: registration-orchestrator-secret
+                  key: POSTGRES_USER
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: registration-orchestrator-secret
+                  key: POSTGRES_PASSWORD
+
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef:
+                  name: registration-orchestrator-secret
+                  key: POSTGRES_URL
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
