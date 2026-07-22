@@ -1,0 +1,9 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: registration-orchestrator
+  namespace: argocd
+spec:
+  applicationRefs:
+    - namePattern: registration-orchestrator
+      useAnnotations: true
