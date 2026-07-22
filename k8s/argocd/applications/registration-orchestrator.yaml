@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: registration-orchestrator
+  namespace: argocd
+
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: orchestrator=ghcr.io/java-taxi-microservices/registration-orchestrator
+
+    argocd-image-updater.argoproj.io/orchestrator.update-strategy: newest-build
+
+    argocd-image-updater.argoproj.io/orchestrator.pull-secret: pullsecret:argocd/ghcr-secret
+
+    argocd-image-updater.argoproj.io/orchestrator.helm.image-name: image.repository
+
+    argocd-image-updater.argoproj.io/orchestrator.helm.image-tag: image.tag
+
+    argocd-image-updater.argoproj.io/write-back-method: git
+
+    argocd-image-updater.argoproj.io/write-back-target: helmvalues:values.yaml
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/java-taxi-microservices/devops.git
+    targetRevision: main
+    path: charts/registration-orchestrator
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: taxi
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
