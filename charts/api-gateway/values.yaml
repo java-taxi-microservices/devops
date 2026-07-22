@@ -1,7 +1,7 @@
 replicaCount: 1
 image:
   repository: ghcr.io/java-taxi-microservices/api-gateway
-  tag: latest
+  tag: 84b564ade1a113b9d01345ad7848965d67f0add0
   pullPolicy: IfNotPresent
 imagePullSecrets:
 - name: ghcr-secret
