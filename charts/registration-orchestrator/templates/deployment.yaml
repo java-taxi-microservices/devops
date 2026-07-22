@@ -51,5 +51,8 @@ spec:
                   name: registration-orchestrator-secret
                   key: POSTGRES_URL
 
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.spring.profiles.active }}
+
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

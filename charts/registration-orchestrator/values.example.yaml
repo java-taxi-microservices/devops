@@ -1,14 +1,30 @@
 replicaCount: 1
+
 image:
   repository: ghcr.io/java-taxi-microservices/registration-orchestrator 
   tag: latest
   pullPolicy: IfNotPresent
+
 imagePullSecrets:
 - name: ghcr-secret
+
 service:
   port: 9090
   targetPort: 9090
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
 secret:
   postgresUser: postgresUser
-  posgresUrl: posgresUrl
   postgresPassword: postgresPassword
+  postgresUrl: postgresUrl
+
+spring:
+  profiles:
+    active: dev
