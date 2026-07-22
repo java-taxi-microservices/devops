@@ -33,6 +33,9 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ inputs.image_name }}:${{ github.sha }}
+          build-args: |
+            GITHUB_ACTOR=${{ github.actor }}
+            GITHUB_TOKEN=${{ github.token }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
