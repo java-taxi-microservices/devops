@@ -12,5 +12,19 @@ services:
     volumes:
       - registration-service-psql-db-data:/var/lib/postgresql
 
+  user-service-psql-db:
+    image: postgres:18-alpine
+    container_name: user-service-psql-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${USER_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${USER_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${USER_POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - user-service-psql-db-data:/var/lib/postgresql
+
 volumes:
   registration-service-psql-db-data:
+  user-service-psql-db-data:
