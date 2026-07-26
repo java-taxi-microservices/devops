@@ -19,8 +19,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      - name: Checkout service repository
+        uses: actions/checkout@v5
+
+      - name: Checkout devops repository
+        uses: actions/checkout@v5
+        with:
+          repository: java-taxi-microservices/devops
+          path: devops
+          token: ${{ secrets.ghcr_pat }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -51,4 +58,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.ghcr_pat }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           PACKAGE_NAME: ${{ inputs.image_name }}
-        run: ./scripts/cleanup-ghcr.sh
+        run: |
+          chmod +x devops/scripts/cleanup-ghcr.sh
+          ./devops/scripts/cleanup-ghcr.sh
