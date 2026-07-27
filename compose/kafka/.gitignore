@@ -1,0 +1,35 @@
+# Kafka directory .gitignore
+
+# Environment variables (contain passwords)
+.env
+.env.local
+.env.*.local
+
+# SSL/TLS Certificates and keystores
+secrets/
+*.pem
+*.p12
+*.keystore
+*.truststore
+*.jks
+
+# Generated files
+*.srl
+*.csr
+san.conf
+
+# Java/Maven
+target/
+*.class
+*.jar
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+.dockerignore
