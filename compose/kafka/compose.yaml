@@ -5,7 +5,6 @@ services:
     restart: unless-stopped
     hostname: kafka
     ports:
-      - "29092:29092"
       - "29094:29094"
     env_file:
       - .env
@@ -22,28 +21,31 @@ services:
       KAFKA_NODE_ID: 1
       CLUSTER_ID: MkQkSWJHUkVGS3hJcWZNeA==
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,SASL_SSL://0.0.0.0:29094
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,SASL_SSL://kafka:29094
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SASL_SSL:SASL_SSL
+      KAFKA_LISTENERS: BROKER://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,CLIENT://0.0.0.0:29094
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka:29092,CLIENT://kafka:29094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:SSL,BROKER:SSL,CLIENT:SASL_SSL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
 
       # SASL/SCRAM
       KAFKA_SASL_ENABLED_MECHANISMS: SCRAM-SHA-256
-      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAINTEXT
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: SCRAM-SHA-256
 
       # SSL/TLS Configuration (global)
-      KAFKA_SSL_KEYSTORE_FILENAME: kafka.server.keystore.p12
-      KAFKA_SSL_KEYSTORE_CREDENTIALS: keystore_creds
-      KAFKA_SSL_KEY_CREDENTIALS: key_creds
-      KAFKA_SSL_TRUSTSTORE_FILENAME: kafka.truststore.p12
-      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: truststore_creds
+      KAFKA_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.server.keystore.p12
+      KAFKA_SSL_KEYSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
+      KAFKA_SSL_KEY_PASSWORD: ${KEYSTORE_PASSWORD}
+      KAFKA_SSL_KEYSTORE_TYPE: PKCS12
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.truststore.p12
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: ${KEYSTORE_PASSWORD}
+      KAFKA_SSL_TRUSTSTORE_TYPE: PKCS12
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: HTTPS
+      KAFKA_SSL_CLIENT_AUTH: none
 
-      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/secrets/kafka_jaas.conf
+      KAFKA_OPTS: -Djava.security.auth.login.config=/etc/kafka/kafka_jaas.conf
 
     healthcheck:
-      test: [ "CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:29092" ]
+      test: [ "CMD-SHELL", "echo | openssl s_client -connect localhost:29094 -CAfile /etc/kafka/secrets/ca-cert.pem -verify_return_error 2>/dev/null | grep -q 'Verify return code: 0'" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -51,6 +53,7 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
       - ./secrets:/etc/kafka/secrets:ro
+      - ./secrets/kafka_jaas.conf:/etc/kafka/kafka_jaas.conf:ro
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -59,9 +62,14 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+      kafka-users-init:
+        condition: service_completed_successfully
     ports:
       - "8280:8080"
     environment:
+      AUTH_TYPE: LOGIN_FORM
+      SPRING_SECURITY_USER_NAME: ${KAFKA_UI_USERNAME}
+      SPRING_SECURITY_USER_PASSWORD: ${KAFKA_UI_PASSWORD}
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29094
       KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: SASL_SSL
@@ -75,6 +83,30 @@ services:
       - ./secrets:/opt/certs:ro
     env_file:
       - .env
+
+  kafka-users-init:
+    image: confluentinc/cp-kafka:7.5.1
+    container_name: kafka-users-init
+    restart: "no"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - ./secrets:/etc/kafka/secrets:ro
+    entrypoint: ["/bin/bash"]
+    command:
+      - -ec
+      - >-
+        kafka-configs --bootstrap-server kafka:29092 --command-config
+        /etc/kafka/secrets/ssl.properties --alter --entity-type users
+        --entity-name admin --add-config
+        "SCRAM-SHA-256=[iterations=8192,password=$$KAFKA_ADMIN_PASSWORD]"
+        && kafka-configs --bootstrap-server kafka:29092 --command-config
+        /etc/kafka/secrets/ssl.properties --alter --entity-type users
+        --entity-name client --add-config
+        "SCRAM-SHA-256=[iterations=8192,password=$$KAFKA_CLIENT_PASSWORD]"
 
 volumes:
   kafka-data:

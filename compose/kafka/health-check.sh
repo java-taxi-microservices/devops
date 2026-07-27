@@ -47,9 +47,9 @@ fi
 # Check if ports are listening
 echo -e "\n🔌 Checking ports..."
 if docker exec kafka ss -tlnp 2>/dev/null | grep -q 29092; then
-    echo -e "${GREEN}✓${NC} Port 29092 (PLAINTEXT) is listening"
+    echo -e "${GREEN}✓${NC} Port 29092 (TLS broker) is listening"
 else
-    echo -e "${RED}✗${NC} Port 29092 (PLAINTEXT) is NOT listening"
+    echo -e "${RED}✗${NC} Port 29092 (TLS broker) is NOT listening"
 fi
 
 if docker exec kafka ss -tlnp 2>/dev/null | grep -q 29093; then
@@ -106,17 +106,7 @@ else
     echo "   Copy from: cp .env.example .env"
 fi
 
-# Test PLAINTEXT connection (for debugging)
-echo -e "\n🧪 Testing PLAINTEXT connection..."
-if docker exec kafka timeout 5 kafka-topics.sh --bootstrap-server kafka:29092 --list >/dev/null 2>&1; then
-    echo -e "${GREEN}✓${NC} PLAINTEXT connection successful"
-else
-    echo -e "${YELLOW}⟳${NC} PLAINTEXT connection test inconclusive"
-fi
-
-# List topics
-echo -e "\n📚 Available topics..."
-docker exec kafka kafka-topics.sh --bootstrap-server kafka:29092 --list 2>/dev/null || echo "   (No topics yet)"
+echo -e "\n🔒 Kafka client endpoint: SASL_SSL on port 29094"
 
 # Check if Kafka UI is accessible
 echo -e "\n🌐 Checking Kafka UI..."
@@ -128,6 +118,4 @@ fi
 
 echo -e "\n✅ Health check complete!"
 echo -e "\n📖 Documentation:"
-echo "   - Setup guide: KAFKA_SETUP.md"
-echo "   - Client examples: CLIENT_EXAMPLES.md"
 echo "   - Quick start: README.md"
